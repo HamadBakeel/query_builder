@@ -27,14 +27,14 @@ class QueryBuilder
         if(count($columns) == count($values)){
             $this->finalQuery = "UPDATE ".$table." SET ";
             for ($i=0 ; $i<count($values) ; $i++) {
-                $column = $columns[i];
-                $value = $values[i];
-                if (i == count($values) - 1) $pair = "$column = $value";
+                $column = $columns[$i];
+                $value = $values[$i];
+                if ($i == count($values) - 1) $pair = "$column = \"$value\"";
                 else $pair = "$column = $value , ";
                 $this->finalQuery .= $pair;
-//                echo $this->finalQuery;
             }
-            $this->finalQuery.=$condition;
+            $this->finalQuery.=" WHERE ".$condition;
+            echo $this->finalQuery;
         }
         return $this;
     }
@@ -48,11 +48,17 @@ class QueryBuilder
         if(count($columns) == count($values)){
             $this->finalQuery = "INSERT INTO $table (";
             for ($i=0 ; $i<count($columns) ; $i++) {
-                $column = $columns[i];
-                if (i == count($columns) - 1) $this->finalQuery.="$column)";
+                $column = $columns[$i];
+                if ($i == count($columns) - 1) $this->finalQuery.="$column)";
                 else $this->finalQuery.="$column, ";
-//                echo $this->finalQuery;
             }
+            $this->finalQuery.=" VALUES (";
+            for ($i=0 ; $i<count($values) ; $i++) {
+                $value = $values[$i];
+                if ($i == count($values) - 1) $this->finalQuery.=" $value)";
+                else $this->finalQuery.="$value, ";
+            }
+                echo $this->finalQuery;
         }
         return $this;
     }
@@ -62,18 +68,22 @@ class QueryBuilder
         return $this;
     }
 
-    public function  count(){
-        str_replace("SELECT","SELECT count()",$this->finalQuery);
+    public function  count($columns,$table){
+//        str_replace("SELECT","SELECT count($table)",$this->finalQuery);
+        $this->finalQuery="SELECT COUNT($columns) FROM $table";
         return $this;
     }
-    public function limit($offset = null, $rowCount){
+
+    public function limit($rowCount,$offset = null){
         if($offset!= null){
-            $this->finalQuery." LIMIT $offset,$rowCount";
+            $this->finalQuery.=" LIMIT $offset , $rowCount";
         }else{
-            $this->finalQuery." LIMIT $rowCount";
+            $this->finalQuery.=" LIMIT $rowCount";
         }
+        echo $this->finalQuery;
         return $this;
     }
+
     public function innerJoin($columns, $table1, $table2,$condition){
         $this->finalQuery = "SELECT $columns FROM $table1 INNER JOIN $table2 ON $condition";
         return $this;
